@@ -38,7 +38,10 @@ const refine_out = tf.tidy(() => {
  //Reshape the output
  const fb = blurred.squeeze(0) 
  //Normalize the mask  to 0..1 range
- const norm_msk =   fb.sub(fb.min()).div(fb.max().sub(fb.min()))
+ // An empty foreground mask has zero range; keep it empty instead of producing NaNs.
+ const minimum = fb.min();
+ const range = fb.max().sub(minimum).maximum(tf.scalar(1e-6));
+ const norm_msk = fb.sub(minimum).div(range);
 
  // Return the result
  return smoothstep(norm_msk);
